@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <link rel="manifest" href="manifest.json">
+  <meta name="theme-color" content="#0d2d55">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Daily Board</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+
+      font-family:
+        Arial,
+        Helvetica,
+        sans-serif;
+
+      background:
+        linear-gradient(
+          180deg,
+          #dceeff 0%,
+          #cfe7fb 55%,
+          #b9d9f5 100%
+        );
+
+      color: #102a43;
+    }
+
+    .page {
+      min-height: 100vh;
+
+      display: flex;
+      flex-direction: column;
+
+      justify-content: center;
+      align-items: center;
+
+      padding: 30px;
+    }
+
+    .app-card {
+      width: min(
+        700px,
+        94vw
+      );
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.96
+        );
+
+      border-radius: 20px;
+
+      padding:
+        40px;
+
+      box-shadow:
+        0 6px 20px
+        rgba(
+          0,
+          0,
+          0,
+          0.12
+        );
+
+      text-align: center;
+    }
+
+    h1 {
+      margin-top: 0;
+
+      margin-bottom: 8px;
+
+      font-size: 54px;
+
+      color: #0d2d55;
+    }
+
+    .subtitle {
+      font-size: 22px;
+
+      color: #486581;
+
+      margin-bottom: 34px;
+    }
+
+    .teacher-name {
+      font-size: 26px;
+      font-weight: 700;
+
+      color: #165998;
+
+      margin-bottom: 28px;
+    }
+
+    .button-stack {
+      display: flex;
+      flex-direction: column;
+
+      gap: 16px;
+    }
+
+    button {
+      width: 100%;
+
+      border: none;
+
+      border-radius: 12px;
+
+      padding:
+        18px
+        20px;
+
+      font-size: 21px;
+
+      font-weight: 700;
+
+      cursor: pointer;
+    }
+
+    .primary {
+      background: #1d63a8;
+      color: white;
+    }
+
+    .secondary {
+      background: #d9eaf8;
+      color: #165998;
+    }
+
+    .display-button {
+      background: #16395f;
+      color: white;
+    }
+
+    .setup-note {
+      margin-top: 26px;
+
+      font-size: 15px;
+
+      color: #627d98;
+    }
+
+    @media (max-width: 600px) {
+
+      .app-card {
+        padding:
+          28px
+          20px;
+      }
+
+      h1 {
+        font-size: 42px;
+      }
+
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <section class="app-card">
+
+      <h1>
+        Daily Board
+      </h1>
+
+      <div class="subtitle">
+        Classroom display made simple.
+      </div>
+
+      <div
+        id="teacherName"
+        class="teacher-name">
+      </div>
+<div
+  id="roomName"
+  class="setup-note"
+  style="margin-top:-18px; margin-bottom:24px;">
+</div>
+
+      <div class="button-stack">
+
+        <button
+          class="primary"
+          onclick="openDashboard()">
+          Enter Today's Board
+        </button>
+
+
+        <button
+          class="display-button"
+          onclick="openDisplay()">
+          Open Classroom Display
+        </button>
+
+
+        <button
+          class="secondary"
+          onclick="openSetup()">
+          Classroom Setup
+        </button>
+
+      </div>
+
+
+      <div
+        id="setupNote"
+        class="setup-note">
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script>
+
+  function loadHome() {
+
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+    const firstRunTest =
+      params.get(
+        "firstRunTest"
+      ) === "1";
+
+
+    const saved =
+      localStorage.getItem(
+        "dailyBoardSetup"
+      );
+
+
+    if (
+      !saved ||
+      firstRunTest
+    ) {
+
+      window.location.href =
+        "index.html?firstRun=1";
+
+      return;
+
+    }
+
+
+    const setupData =
+      JSON.parse(saved);
+
+
+    const teacherName =
+      document.getElementById(
+        "teacherName"
+      );
+
+    const roomName =
+      document.getElementById(
+        "roomName"
+      );
+
+    const setupNote =
+      document.getElementById(
+        "setupNote"
+      );
+
+
+    teacherName.textContent =
+      setupData.teacherName ||
+      "Welcome";
+
+
+    roomName.textContent =
+      setupData.roomName ||
+      "";
+
+
+    setupNote.textContent =
+      "Use Classroom Setup only when your schedule needs to change.";
+
+  }
+
+
+  function openDashboard() {
+
+    window.location.href =
+      "dashboard.html";
+
+  }
+
+
+  function openDisplay() {
+
+    window.location.href =
+      "display.html";
+
+  }
+
+
+  function openSetup() {
+
+    window.location.href =
+      "index.html";
+
+  }
+
+
+  loadHome();
+
+</script>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('./service-worker.js');
+  }
+</script>
+</body>
+</html>

@@ -1,0 +1,1792 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Daily Board Display</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d2d55">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      width: 100%;
+      min-height: 100%;
+      font-family: Arial, Helvetica, sans-serif;
+
+      background: #cfe7fb;
+
+      background-image:
+        linear-gradient(
+          180deg,
+          #dceeff 0%,
+          #cfe7fb 55%,
+          #b9d9f5 100%
+        );
+
+      color: #102a43;
+    }
+
+    body {
+      min-height: 100vh;
+    }
+
+    .board {
+      width: 100%;
+      min-height: 100vh;
+
+      padding:
+        28px
+        38px
+        34px
+        38px;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+
+      border-bottom:
+        4px solid #16395f;
+
+      padding-bottom: 18px;
+      margin-bottom: 24px;
+    }
+
+    .title-area {
+      flex: 1;
+      padding-right: 30px;
+    }
+
+    .class-name {
+      font-size: 62px;
+      font-weight: 800;
+      line-height: 1;
+
+      color: #0d2d55;
+
+      margin-bottom: 12px;
+    }
+
+    .topic {
+      font-size: 34px;
+      font-weight: 700;
+
+      color: #1e5f9e;
+    }
+
+    .right-info {
+      text-align: right;
+      min-width: 300px;
+    }
+
+    .date {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .clock {
+      font-size: 40px;
+      font-weight: 800;
+
+      margin-top: 3px;
+
+      color: #0d2d55;
+    }
+
+    .countdown-box {
+      margin-top: 10px;
+
+      display: inline-block;
+
+      background: #1d63a8;
+      color: white;
+
+      padding:
+        11px
+        18px;
+
+      border-radius: 12px;
+
+      font-size: 21px;
+      font-weight: 700;
+
+      box-shadow:
+        0 3px 7px
+        rgba(0,0,0,0.12);
+    }
+
+    .cards {
+      display: flex;
+      flex-direction: column;
+
+      gap: 18px;
+    }
+
+    .card {
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.93
+        );
+
+      border-radius: 18px;
+
+      padding:
+        22px
+        28px;
+
+      box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.10);
+
+      border:
+        1px solid
+        rgba(
+          69,
+          126,
+          180,
+          0.20
+        );
+    }
+
+    .card-row {
+      display: flex;
+      align-items: flex-start;
+
+      gap: 24px;
+    }
+
+    .card-label {
+      min-width: 225px;
+
+      font-size: 22px;
+      font-weight: 800;
+
+      color: #165998;
+
+      text-transform: uppercase;
+
+      border-right:
+        3px solid #c1ddf6;
+
+      padding-right: 22px;
+
+      line-height: 1.3;
+    }
+
+    .card-content {
+      flex: 1;
+
+      font-size: 29px;
+      line-height: 1.45;
+
+      color: #152536;
+    }
+
+    .target {
+      font-size: 34px;
+      font-weight: 700;
+    }
+
+    .plan-list {
+      margin: 0;
+
+      padding-left: 30px;
+
+      font-size: 29px;
+      line-height: 1.45;
+    }
+
+    .passing-screen {
+      min-height: 94vh;
+
+      display: flex;
+      flex-direction: column;
+
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+    }
+
+    .passing-title {
+      font-size: 58px;
+      font-weight: 800;
+
+      color: #0d2d55;
+
+      margin-bottom: 12px;
+    }
+
+    .next-class {
+      font-size: 46px;
+      font-weight: 800;
+
+      color: #1e5f9e;
+
+      margin-bottom: 8px;
+    }
+
+    .next-topic {
+      font-size: 28px;
+
+      color: #335f83;
+
+      margin-bottom: 16px;
+    }
+
+    .passing-clock {
+      font-size: 44px;
+      font-weight: 800;
+
+      color: #0d2d55;
+
+      margin-bottom: 12px;
+    }
+
+    .passing-card {
+      width: min(
+        1100px,
+        92vw
+      );
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.94
+        );
+
+      border-radius: 18px;
+
+      padding:
+        20px
+        28px;
+
+      margin-top: 14px;
+
+      box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.10);
+    }
+
+    .passing-label {
+      font-size: 20px;
+      font-weight: 800;
+
+      color: #165998;
+
+      text-transform: uppercase;
+
+      margin-bottom: 8px;
+    }
+
+    .passing-plan {
+      font-size: 30px;
+      line-height: 1.4;
+
+      color: #152536;
+    }
+
+    .daily-info-grid {
+      width: min(
+        1100px,
+        92vw
+      );
+
+      display: grid;
+
+      grid-template-columns:
+        repeat(
+          3,
+          1fr
+        );
+
+      gap: 14px;
+
+      margin-top: 18px;
+    }
+
+    .info-box {
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.93
+        );
+
+      border-radius: 16px;
+
+      padding:
+        16px
+        18px;
+
+      box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.08);
+    }
+
+    .info-label {
+      font-size: 17px;
+      font-weight: 800;
+
+      color: #165998;
+
+      text-transform: uppercase;
+
+      margin-bottom: 6px;
+    }
+
+    .info-value {
+      font-size: 26px;
+      font-weight: 700;
+
+      color: #0d2d55;
+    }
+
+    .announcement-box {
+      width: min(
+        1100px,
+        92vw
+      );
+
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.93
+        );
+
+      border-radius: 16px;
+
+      padding:
+        16px
+        20px;
+
+      margin-top: 14px;
+
+      box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.08);
+
+      font-size: 24px;
+    }
+
+    .special-screen {
+      min-height: 82vh;
+
+      display: flex;
+      flex-direction: column;
+
+      justify-content: center;
+      align-items: center;
+
+      text-align: center;
+    }
+
+    .special-title {
+      font-size: 68px;
+      font-weight: 800;
+
+      color: #0d2d55;
+
+      margin-bottom: 18px;
+    }
+
+    .special-message {
+      font-size: 34px;
+
+      color: #245d8d;
+
+      margin-bottom: 28px;
+    }
+
+    .special-time {
+      font-size: 48px;
+      font-weight: 800;
+
+      color: #0d2d55;
+
+      margin-bottom: 14px;
+    }
+
+    .next-box {
+      background:
+        rgba(
+          255,
+          255,
+          255,
+          0.94
+        );
+
+      border-radius: 18px;
+
+      padding:
+        18px
+        28px;
+
+      margin-top: 16px;
+
+      font-size: 28px;
+
+      box-shadow:
+        0 4px 10px
+        rgba(0,0,0,0.10);
+    }
+
+    .error {
+      padding: 40px;
+      font-size: 28px;
+    }
+
+    @media (max-width: 900px) {
+      .class-name {
+        font-size: 46px;
+      }
+
+      .topic {
+        font-size: 28px;
+      }
+
+      .card-row {
+        flex-direction: column;
+        gap: 10px;
+      }
+
+      .card-label {
+        min-width: 0;
+
+        border-right: none;
+
+        border-bottom:
+          2px solid #c1ddf6;
+
+        padding-right: 0;
+        padding-bottom: 8px;
+      }
+
+      .right-info {
+        min-width: 220px;
+      }
+
+      .daily-info-grid {
+        grid-template-columns:
+          1fr;
+      }
+    }
+  #displayHomeButton {
+  position: fixed;
+  bottom: 12px;
+  left: 12px;
+  z-index: 9998;
+  padding: 10px 18px;
+  border: 1px solid #0d2d55;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.85);
+  color: #0d2d55;
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+  </style>
+</head>
+
+<body>
+
+  <div
+    id="board"
+    class="board">
+    Loading classroom board...
+  </div>
+<div
+  id="testControls"
+  style="
+    display: none;
+    position: fixed;
+    bottom: 10px;
+    right: 10px;
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,.2);
+    z-index: 9999;
+  "
+>
+  <strong>Test Time:</strong>
+
+  <input
+    type="time"
+    id="testTimeInput"
+  >
+
+  <button
+    onclick="setTestTime()"
+  >
+    Test
+  </button>
+
+  <button
+    onclick="clearTestTime()"
+  >
+    Live
+  </button>
+</div>
+
+  <script>
+
+    let setupData = null;
+    let dailyData = null;
+    let currentDisplayData = null;
+let testTime = null;
+function setTestTime() {
+
+  testTime =
+    document.getElementById(
+      "testTimeInput"
+    ).value;
+
+  refreshBoard();
+}
+
+
+function clearTestTime() {
+
+  testTime = null;
+
+  document.getElementById(
+    "testTimeInput"
+  ).value = "";
+
+  refreshBoard();
+}
+    function initializeBoard() {
+
+      const savedSetup =
+        localStorage.getItem(
+          "dailyBoardSetup"
+        );
+
+      const savedDaily =
+        localStorage.getItem(
+          "dailyBoardToday"
+        );
+
+      if (!savedSetup) {
+        displayError(
+          "No classroom setup was found."
+        );
+        return;
+      }
+
+      setupData =
+        JSON.parse(savedSetup);
+
+
+      if (savedDaily) {
+
+        const parsedDaily =
+          JSON.parse(savedDaily);
+
+        if (
+          parsedDaily.date ===
+          getTodayKey()
+        ) {
+          dailyData =
+            parsedDaily;
+        }
+
+      }
+
+
+      refreshBoard();
+
+    }
+
+
+    function refreshBoard() {
+
+      currentDisplayData =
+        determineCurrentDisplay();
+
+      renderCurrentDisplay();
+
+    }
+
+
+    function determineCurrentDisplay() {
+
+      const now =
+  getCurrentTime();
+
+      const periods =
+        getValidPeriods();
+
+      if (
+        periods.length === 0
+      ) {
+        return {
+          mode: "error",
+          message:
+            "No valid periods were found in the classroom setup."
+        };
+      }
+
+
+      for (
+        let i = 0;
+        i < periods.length;
+        i++
+      ) {
+
+        const period =
+          periods[i];
+
+        const start =
+          timeToday(period.start);
+
+        const end =
+          timeToday(period.end);
+
+
+        if (
+          now >= start &&
+          now < end
+        ) {
+
+          if (
+            period.type ===
+            "special"
+          ) {
+            return buildSpecialData(
+              period,
+              periods,
+              i
+            );
+          }
+
+          return buildClassData(
+            period
+          );
+        }
+
+      }
+
+
+      return buildPassingData(
+        periods
+      );
+
+    }
+
+
+    function buildClassData(period) {
+
+      const classInfo =
+        findDailyClass(
+          period.name
+        );
+
+      return {
+        mode: "class",
+
+        className:
+          period.name,
+
+        topic:
+          classInfo?.topic ||
+          "",
+
+        standard:
+          classInfo?.standard ||
+          "",
+
+        learningTarget:
+          classInfo?.learningTarget ||
+          "",
+
+        plan:
+          classInfo?.plan ||
+          "",
+
+        date:
+          formatDate(
+            new Date()
+          ),
+
+        endTime:
+          timeToday(
+            period.end
+          )
+      };
+
+    }
+
+
+    function buildSpecialData(
+      period,
+      periods,
+      periodIndex
+    ) {
+
+      const nextPeriod =
+        periods[
+          periodIndex + 1
+        ] || null;
+
+      return {
+        mode:
+          "special",
+
+        className:
+          period.name,
+
+        lunch:
+          dailyData?.lunch ||
+          "",
+
+        date:
+          formatDate(
+            new Date()
+          ),
+
+        endTime:
+          timeToday(
+            period.end
+          ),
+
+        nextClass:
+          nextPeriod?.name ||
+          "",
+
+        nextStartTime:
+          nextPeriod
+            ? timeToday(
+                nextPeriod.start
+              )
+            : null
+      };
+
+    }
+
+
+    function buildPassingData(
+      periods
+    ) {
+
+      const now =
+  getCurrentTime();
+
+      let nextPeriod =
+        null;
+
+
+      for (
+        const period of periods
+      ) {
+
+        const start =
+          timeToday(
+            period.start
+          );
+
+        if (
+          start > now
+        ) {
+          nextPeriod =
+            period;
+          break;
+        }
+
+      }
+
+
+      const nextClassInfo =
+        nextPeriod
+          ? findDailyClass(
+              nextPeriod.name
+            )
+          : null;
+
+
+      return {
+        mode:
+          "passing",
+
+        nextClass:
+          nextPeriod?.name ||
+          "",
+
+        nextTopic:
+          nextClassInfo?.topic ||
+          "",
+
+        nextPlan:
+          nextClassInfo?.plan ||
+          "",
+
+        nextStartTime:
+          nextPeriod
+            ? timeToday(
+                nextPeriod.start
+              )
+            : null,
+
+        lunch:
+          dailyData?.lunch ||
+          "",
+
+        doorCode:
+          dailyData?.doorCode ||
+          "",
+
+        announcement:
+          dailyData?.announcement ||
+          "",
+
+        activeSchedule:
+          dailyData?.scheduleName ||
+          "Normal"
+      };
+
+    }
+
+
+    function getValidPeriods() {
+
+      if (
+        !setupData?.periods
+      ) {
+        return [];
+      }
+
+      return setupData.periods
+        .filter(
+          period =>
+            period.name &&
+            period.start &&
+            period.end
+        )
+        .slice()
+        .sort(
+          (a, b) =>
+            a.start.localeCompare(
+              b.start
+            )
+        );
+
+    }
+
+
+    function findDailyClass(
+      className
+    ) {
+
+      if (
+        !dailyData?.classes
+      ) {
+        return null;
+      }
+
+      return (
+        dailyData.classes.find(
+          item =>
+            item.className ===
+            className
+        ) || null
+      );
+
+    }
+
+
+    function renderCurrentDisplay() {
+
+      const data =
+        currentDisplayData;
+
+      if (
+        data.mode ===
+        "class"
+      ) {
+        displayClass(
+          data
+        );
+        return;
+      }
+
+      if (
+        data.mode ===
+        "special"
+      ) {
+        displaySpecial(
+          data
+        );
+        return;
+      }
+
+      if (
+        data.mode ===
+        "passing"
+      ) {
+        displayPassing(
+          data
+        );
+        return;
+      }
+
+      displayError(
+        data.message ||
+        "Unable to display the board."
+      );
+
+    }
+
+
+    function displayClass(
+      data
+    ) {
+
+      const board =
+        document.getElementById(
+          "board"
+        );
+
+      board.innerHTML = `
+        <div class="topbar">
+
+          <div class="title-area">
+
+            <div class="class-name">
+              ${escapeHtml(
+                data.className
+              )}
+            </div>
+
+            <div class="topic">
+              ${escapeHtml(
+                data.topic
+              )}
+            </div>
+
+          </div>
+
+
+          <div class="right-info">
+
+            <div class="date">
+              ${escapeHtml(
+                data.date
+              )}
+            </div>
+
+            <div
+              class="clock"
+              id="liveClock">
+            </div>
+
+            <div
+              class="countdown-box"
+              id="countdown">
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <div class="cards">
+
+          <div class="card">
+            <div class="card-row">
+
+              <div class="card-label">
+                WV Standard
+              </div>
+
+              <div class="card-content">
+                ${escapeHtml(
+                  data.standard
+                )}
+              </div>
+
+            </div>
+          </div>
+
+
+          <div class="card">
+            <div class="card-row">
+
+              <div class="card-label">
+                In Plain English
+              </div>
+
+              <div
+                class="card-content target">
+                ${escapeHtml(
+                  data.learningTarget
+                )}
+              </div>
+
+            </div>
+          </div>
+
+
+          <div class="card">
+            <div class="card-row">
+
+              <div class="card-label">
+                Today's Plan
+              </div>
+
+              <div class="card-content">
+                ${formatPlan(
+                  data.plan
+                )}
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      `;
+
+      updateClock();
+      updateCountdown();
+
+    }
+
+
+    function displayPassing(
+      data
+    ) {
+
+      const board =
+        document.getElementById(
+          "board"
+        );
+
+      const announcement =
+        normalizeAnnouncement(
+          data.announcement
+        );
+
+      board.innerHTML = `
+        <div class="passing-screen">
+
+          <div class="passing-title">
+            Passing Period
+          </div>
+
+          ${
+            data.nextClass
+              ? `
+                <div class="next-class">
+                  Next:
+                  ${escapeHtml(
+                    data.nextClass
+                  )}
+                </div>
+              `
+              : `
+                <div class="next-class">
+                  No More Classes
+                </div>
+              `
+          }
+
+          ${
+            data.nextTopic
+              ? `
+                <div class="next-topic">
+                  ${escapeHtml(
+                    data.nextTopic
+                  )}
+                </div>
+              `
+              : ""
+          }
+
+          <div
+            class="passing-clock"
+            id="liveClock">
+          </div>
+
+          ${
+            data.nextStartTime
+              ? `
+                <div
+                  class="countdown-box"
+                  id="nextCountdown">
+                </div>
+              `
+              : ""
+          }
+
+
+          <div class="passing-card">
+
+            <div class="passing-label">
+              Today's Plan
+            </div>
+
+            <div class="passing-plan">
+              ${
+                data.nextPlan
+                  ? formatPlan(
+                      data.nextPlan
+                    )
+                  : "No plan entered."
+              }
+            </div>
+
+          </div>
+
+
+          <div class="daily-info-grid">
+
+            <div class="info-box">
+
+              <div class="info-label">
+                Door Code
+              </div>
+
+              <div class="info-value">
+                ${
+                  data.doorCode
+                    ? escapeHtml(
+                        data.doorCode
+                      )
+                    : "—"
+                }
+              </div>
+
+            </div>
+
+
+            <div class="info-box">
+
+              <div class="info-label">
+                Today's Lunch
+              </div>
+
+              <div class="info-value">
+                ${
+                  data.lunch
+                    ? escapeHtml(
+                        data.lunch
+                      )
+                    : "—"
+                }
+              </div>
+
+            </div>
+
+
+            <div class="info-box">
+
+              <div class="info-label">
+                Schedule
+              </div>
+
+              <div class="info-value">
+                ${
+                  data.activeSchedule
+                    ? escapeHtml(
+                        data.activeSchedule
+                      )
+                    : "Normal"
+                }
+              </div>
+
+            </div>
+
+          </div>
+
+
+          ${
+            announcement
+              ? `
+                <div class="announcement-box">
+
+                  <strong>
+                    Announcement:
+                  </strong>
+
+                  ${escapeHtml(
+                    announcement
+                  )}
+
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+      `;
+
+      updateClock();
+      updateNextCountdown();
+
+    }
+
+
+    function displaySpecial(
+      data
+    ) {
+
+      const board =
+        document.getElementById(
+          "board"
+        );
+
+      const name =
+        data.className
+          .toLowerCase();
+
+      let message =
+        "Special Period";
+
+      if (
+        name.includes(
+          "planning"
+        )
+      ) {
+        message =
+          "Teacher Planning Period";
+      }
+
+      else if (
+        name.includes(
+          "lunch"
+        )
+      ) {
+        message =
+          data.lunch
+            ? "Today's Lunch: " +
+              data.lunch
+            : "Lunch";
+      }
+
+      else if (
+        name.includes(
+          "homeroom"
+        )
+      ) {
+        message =
+          "Good morning.";
+      }
+
+
+      board.innerHTML = `
+        <div class="special-screen">
+
+          <div class="special-title">
+            ${escapeHtml(
+              data.className
+            )}
+          </div>
+
+          <div class="special-message">
+            ${escapeHtml(
+              message
+            )}
+          </div>
+
+          <div
+            class="special-time"
+            id="liveClock">
+          </div>
+
+          <div class="date">
+            ${escapeHtml(
+              data.date
+            )}
+          </div>
+
+          <div
+            class="countdown-box"
+            id="countdown">
+          </div>
+
+          ${
+            data.nextClass
+              ? `
+                <div class="next-box">
+                  Next:
+                  ${escapeHtml(
+                    data.nextClass
+                  )}
+
+                  <div
+                    id="nextCountdown">
+                  </div>
+                </div>
+              `
+              : ""
+          }
+
+        </div>
+      `;
+
+      updateClock();
+      updateCountdown();
+      updateNextCountdown();
+
+    }
+
+
+    function updateClock() {
+
+      const clock =
+        document.getElementById(
+          "liveClock"
+        );
+
+      if (!clock) {
+        return;
+      }
+
+      const now =
+  getCurrentTime();
+
+      clock.textContent =
+        now.toLocaleTimeString(
+          [],
+          {
+            hour:
+              "numeric",
+
+            minute:
+              "2-digit",
+
+            second:
+              "2-digit"
+          }
+        );
+
+    }
+
+
+    function updateCountdown() {
+
+      const countdown =
+        document.getElementById(
+          "countdown"
+        );
+
+      if (
+        !countdown ||
+        !currentDisplayData?.endTime
+      ) {
+        return;
+      }
+
+      const now =
+  getCurrentTime();
+
+      const end =
+        new Date(
+          currentDisplayData.endTime
+        );
+
+      const diff =
+        end - now;
+
+
+      if (
+        diff <= 0
+      ) {
+        countdown.textContent =
+          "Period ending";
+        return;
+      }
+
+
+      const totalSeconds =
+        Math.floor(
+          diff / 1000
+        );
+
+      const minutes =
+        Math.floor(
+          totalSeconds / 60
+        );
+
+      const seconds =
+        totalSeconds % 60;
+
+
+      countdown.textContent =
+        `${minutes} min ` +
+        `${String(
+          seconds
+        ).padStart(
+          2,
+          "0"
+        )} sec remaining`;
+
+    }
+
+
+    function updateNextCountdown() {
+
+      const box =
+        document.getElementById(
+          "nextCountdown"
+        );
+
+      if (
+        !box ||
+        !currentDisplayData?.nextStartTime
+      ) {
+        return;
+      }
+
+      const now =
+  getCurrentTime();
+
+      const next =
+        new Date(
+          currentDisplayData.nextStartTime
+        );
+
+      const diff =
+        next - now;
+
+
+      if (
+        diff <= 0
+      ) {
+        box.textContent =
+          "Starting now";
+        return;
+      }
+
+
+      const totalSeconds =
+        Math.floor(
+          diff / 1000
+        );
+
+      const minutes =
+        Math.floor(
+          totalSeconds / 60
+        );
+
+      const seconds =
+        totalSeconds % 60;
+
+
+      box.textContent =
+        `Begins in ${minutes} min ` +
+        `${String(
+          seconds
+        ).padStart(
+          2,
+          "0"
+        )} sec`;
+
+    }
+
+
+    function timeToday(
+      timeString
+    ) {
+
+      const [
+        hours,
+        minutes
+      ] =
+        timeString
+          .split(":")
+          .map(Number);
+
+      const date =
+        new Date();
+
+      date.setHours(
+        hours,
+        minutes,
+        0,
+        0
+      );
+
+      return date;
+
+    }
+
+
+    function getTodayKey() {
+
+      const today =
+        new Date();
+
+      const year =
+        today.getFullYear();
+
+      const month =
+        String(
+          today.getMonth() + 1
+        ).padStart(
+          2,
+          "0"
+        );
+
+      const day =
+        String(
+          today.getDate()
+        ).padStart(
+          2,
+          "0"
+        );
+
+      return (
+        `${year}-${month}-${day}`
+      );
+
+    }
+
+
+    function formatDate(
+      date
+    ) {
+
+      return date.toLocaleDateString(
+        [],
+        {
+          weekday:
+            "long",
+
+          month:
+            "long",
+
+          day:
+            "numeric"
+        }
+      );
+
+    }
+
+
+    function normalizeAnnouncement(
+      announcement
+    ) {
+
+      if (
+        !announcement
+      ) {
+        return "";
+      }
+
+      const value =
+        announcement
+          .toString()
+          .trim();
+
+      if (
+        value === "" ||
+        value.toLowerCase() ===
+        "none"
+      ) {
+        return "";
+      }
+
+      return value;
+
+    }
+
+
+    function formatPlan(
+      plan
+    ) {
+
+      if (!plan) {
+        return "No plan entered.";
+      }
+
+      const items =
+        plan
+          .toString()
+          .split(/\n|;/)
+          .map(
+            item =>
+              item.trim()
+          )
+          .filter(
+            item =>
+              item.length > 0
+          );
+
+
+      if (
+        items.length <= 1
+      ) {
+        return escapeHtml(
+          plan
+        );
+      }
+
+
+      return `
+        <ul class="plan-list">
+          ${items
+            .map(
+              item =>
+                `<li>${escapeHtml(
+                  item
+                )}</li>`
+            )
+            .join("")}
+        </ul>
+      `;
+
+    }
+
+
+    function displayError(
+      message
+    ) {
+
+      document
+        .getElementById(
+          "board"
+        )
+        .innerHTML = `
+          <div class="error">
+
+            <h2>
+              Error loading
+              classroom board
+            </h2>
+
+            <p>
+              ${escapeHtml(
+                message
+              )}
+            </p>
+
+          </div>
+        `;
+
+    }
+
+
+    function escapeHtml(
+      text
+    ) {
+
+      return String(
+        text ?? ""
+      )
+        .replace(
+          /&/g,
+          "&amp;"
+        )
+        .replace(
+          /</g,
+          "&lt;"
+        )
+        .replace(
+          />/g,
+          "&gt;"
+        )
+        .replace(
+          /"/g,
+          "&quot;"
+        )
+        .replace(
+          /'/g,
+          "&#039;"
+        );
+
+    }
+
+function getCurrentTime() {
+
+  if (!testTime) {
+    return new Date();
+  }
+
+  const [
+    hours,
+    minutes
+  ] = testTime
+    .split(":")
+    .map(Number);
+
+  const date =
+    new Date();
+
+  date.setHours(
+    hours,
+    minutes,
+    0,
+    0
+  );
+
+  return date;
+}
+ function initializeDevelopmentMode() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const developmentMode =
+    params.get("dev") === "1";
+
+  if (developmentMode) {
+
+    document.getElementById(
+      "testControls"
+    ).style.display =
+      "block";
+
+  }
+
+}
+
+
+initializeDevelopmentMode();
+initializeBoard();
+
+
+    setInterval(
+      () => {
+        updateClock();
+        updateCountdown();
+        updateNextCountdown();
+      },
+      1000
+    );
+
+
+    setInterval(
+      refreshBoard,
+      5000
+    );
+
+  </script>
+
+  <button
+  id="displayHomeButton"
+  type="button"
+  onclick="window.location.href='home.html'"
+>
+  Home
+</button>
+
+</body>
+</html>

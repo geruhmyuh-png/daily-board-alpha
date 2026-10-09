@@ -1,0 +1,643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Daily Board Dashboard</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d2d55">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eef5fb;
+      color: #102a43;
+    }
+
+    .page {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 36px 24px;
+    }
+
+    h1 {
+      margin-bottom: 4px;
+      color: #0d2d55;
+    }
+
+    .subtitle {
+      margin-top: 0;
+      color: #486581;
+      margin-bottom: 28px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #165998;
+    }
+
+    h3 {
+      margin-top: 0;
+      color: #0d2d55;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input,
+    textarea,
+    select {
+      width: 100%;
+      padding: 11px;
+      margin-bottom: 16px;
+      border: 1px solid #a9bfd3;
+      border-radius: 7px;
+      font-size: 16px;
+      font-family: inherit;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .save-button {
+      background: #1d63a8;
+      color: white;
+    }
+
+    .setup-button {
+      background: #d9eaf8;
+      color: #165998;
+    }
+
+    .status {
+      margin-top: 16px;
+      font-weight: bold;
+      color: #2f6f44;
+    }
+
+    .warning {
+      background: #fff4d6;
+      border: 1px solid #e6c76b;
+      padding: 18px;
+      border-radius: 10px;
+      margin-bottom: 20px;
+    }
+
+    @media (max-width: 700px) {
+      .two-column {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+
+    <h1>Daily Board</h1>
+
+    <p class="subtitle">
+      Enter today's classroom information.
+    </p>
+
+    <div id="noSetupWarning" class="warning" style="display:none;">
+      No classroom setup was found.
+      Open the setup page first and create your schedule.
+    </div>
+
+
+    <section class="card">
+
+      <h2>Today's General Information</h2>
+
+      <div class="two-column">
+
+        <div>
+          <label for="scheduleName">
+            Schedule
+          </label>
+
+          <input
+            type="text"
+            id="scheduleName"
+            value="Normal"
+          >
+        </div>
+
+        <div>
+          <label for="lunch">
+            Today's Lunch
+          </label>
+
+          <input
+            type="text"
+            id="lunch"
+            placeholder="Example: Pizza"
+          >
+        </div>
+
+      </div>
+
+
+      <div class="two-column">
+
+        <div>
+          <label for="doorCode">
+            Door Code
+          </label>
+
+          <input
+            type="text"
+            id="doorCode"
+            placeholder="Optional"
+          >
+        </div>
+
+        <div>
+          <label for="announcement">
+            Announcement
+          </label>
+
+          <input
+            type="text"
+            id="announcement"
+            placeholder="Optional"
+          >
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <div id="classSections"></div>
+
+
+    <div class="button-row">
+
+  <button
+    class="save-button"
+    type="button"
+    onclick="saveDailyBoard()"
+  >
+    Save Today's Board
+  </button>
+
+  <button
+    class="save-button"
+    type="button"
+    onclick="openDisplay()"
+  >
+    Open Classroom Display
+  </button>
+
+  <button
+    class="setup-button"
+    type="button"
+    onclick="openHome()"
+  >
+    Home
+  </button>
+
+  <button
+    class="setup-button"
+    type="button"
+    onclick="openSetup()"
+  >
+    Edit Classroom Setup
+  </button>
+
+</div>
+
+    <div id="saveStatus" class="status"></div>
+
+  </main>
+
+
+  <script>
+
+    let setupData = null;
+let dashboardHasUnsavedChanges = false;
+
+    function loadClassroomSetup() {
+
+      const saved =
+        localStorage.getItem("dailyBoardSetup");
+
+      if (!saved) {
+
+        document.getElementById(
+          "noSetupWarning"
+        ).style.display = "block";
+
+        return;
+      }
+
+      setupData =
+        JSON.parse(saved);
+
+      buildClassSections();
+
+      loadDailyBoard();
+
+    }
+
+
+    function buildClassSections() {
+
+      const container =
+        document.getElementById(
+          "classSections"
+        );
+
+      container.innerHTML = "";
+
+      if (
+        !setupData ||
+        !setupData.periods
+      ) {
+        return;
+      }
+
+      const classPeriods =
+        setupData.periods.filter(
+          period =>
+            period.type === "class"
+        );
+
+      classPeriods.forEach(
+        (period, index) => {
+
+          const card =
+            document.createElement(
+              "section"
+            );
+
+          card.className = "card";
+
+          card.dataset.periodIndex =
+            index;
+
+          card.dataset.periodName =
+            period.name;
+
+          card.innerHTML = `
+            <h3>
+              ${escapeHtml(period.name)}
+            </h3>
+
+            <label>
+              Topic
+            </label>
+
+            <input
+              type="text"
+              class="topic"
+              placeholder="What are students learning about?"
+            >
+
+            <label>
+              WV Standard
+            </label>
+
+            <input
+              type="text"
+              class="standard"
+              placeholder="Example: HS-PS1-3"
+            >
+
+            <label>
+              Learning Target
+            </label>
+
+            <textarea
+              class="learningTarget"
+              placeholder="Write the learning target in plain English."
+            ></textarea>
+
+            <label>
+              Today's Plan
+            </label>
+
+            <textarea
+              class="plan"
+              placeholder="Enter today's activities. Separate items with new lines if desired."
+            ></textarea>
+          `;
+
+          container.appendChild(card);
+
+        }
+      );
+
+    }
+
+
+    function saveDailyBoard() {
+
+      if (!setupData) {
+        alert(
+          "No classroom setup was found."
+        );
+        return;
+      }
+
+      const classes = [];
+
+      const cards =
+        document.querySelectorAll(
+          "#classSections .card"
+        );
+
+      cards.forEach(card => {
+
+        classes.push({
+          className:
+            card.dataset.periodName,
+
+          topic:
+            card.querySelector(
+              ".topic"
+            ).value.trim(),
+
+          standard:
+            card.querySelector(
+              ".standard"
+            ).value.trim(),
+
+          learningTarget:
+            card.querySelector(
+              ".learningTarget"
+            ).value.trim(),
+
+          plan:
+            card.querySelector(
+              ".plan"
+            ).value.trim()
+        });
+
+      });
+
+
+      const dailyData = {
+
+        date:
+          getTodayKey(),
+
+        scheduleName:
+          document.getElementById(
+            "scheduleName"
+          ).value.trim(),
+
+        lunch:
+          document.getElementById(
+            "lunch"
+          ).value.trim(),
+
+        doorCode:
+          document.getElementById(
+            "doorCode"
+          ).value.trim(),
+
+        announcement:
+          document.getElementById(
+            "announcement"
+          ).value.trim(),
+
+        classes:
+          classes
+      };
+
+
+      localStorage.setItem(
+        "dailyBoardToday",
+        JSON.stringify(dailyData)
+      );
+
+      dashboardHasUnsavedChanges = false;
+
+
+      document.getElementById(
+        "saveStatus"
+      ).textContent =
+        "Today's board has been saved.";
+
+    }
+
+
+    function loadDailyBoard() {
+
+      const saved =
+        localStorage.getItem(
+          "dailyBoardToday"
+        );
+
+      if (!saved) {
+        return;
+      }
+
+      const dailyData =
+        JSON.parse(saved);
+
+
+      if (
+        dailyData.date !==
+        getTodayKey()
+      ) {
+        return;
+      }
+
+
+      document.getElementById(
+        "scheduleName"
+      ).value =
+        dailyData.scheduleName ||
+        "Normal";
+
+      document.getElementById(
+        "lunch"
+      ).value =
+        dailyData.lunch || "";
+
+      document.getElementById(
+        "doorCode"
+      ).value =
+        dailyData.doorCode || "";
+
+      document.getElementById(
+        "announcement"
+      ).value =
+        dailyData.announcement || "";
+
+
+      const cards =
+        document.querySelectorAll(
+          "#classSections .card"
+        );
+
+
+      cards.forEach(card => {
+
+        const matchingClass =
+          dailyData.classes?.find(
+            item =>
+              item.className ===
+              card.dataset.periodName
+          );
+
+        if (!matchingClass) {
+          return;
+        }
+
+        card.querySelector(
+          ".topic"
+        ).value =
+          matchingClass.topic || "";
+
+        card.querySelector(
+          ".standard"
+        ).value =
+          matchingClass.standard || "";
+
+        card.querySelector(
+          ".learningTarget"
+        ).value =
+          matchingClass.learningTarget ||
+          "";
+
+        card.querySelector(
+          ".plan"
+        ).value =
+          matchingClass.plan || "";
+
+      });
+
+    }
+
+
+    function getTodayKey() {
+
+      const today =
+        new Date();
+
+      const year =
+        today.getFullYear();
+
+      const month =
+        String(
+          today.getMonth() + 1
+        ).padStart(2, "0");
+
+      const day =
+        String(
+          today.getDate()
+        ).padStart(2, "0");
+
+      return `${year}-${month}-${day}`;
+
+    }
+
+
+    function openSetup() {
+
+      window.location.href =
+        "index.html";
+
+    }
+function openDisplay() {
+
+  window.location.href =
+    "display.html";
+
+}
+
+
+function openHome() {
+if (dashboardHasUnsavedChanges) {
+  const saveChanges = confirm(
+    "You have unsaved changes. Would you like to save them before returning Home?"
+  );
+
+  if (!saveChanges) {
+    return;
+  }
+  if (saveChanges) {
+  saveDailyBoard();
+  window.location.href = "home.html";
+  return;
+}
+}
+  window.location.href =
+    "home.html";
+
+}
+
+    function escapeHtml(text) {
+
+      return String(
+        text ?? ""
+      )
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#039;");
+
+    }
+
+
+    loadClassroomSetup();
+
+    document.addEventListener("input", () => {
+  dashboardHasUnsavedChanges = true;
+});
+
+document.addEventListener("change", () => {
+  dashboardHasUnsavedChanges = true;
+});
+
+  </script>
+
+</body>
+</html>

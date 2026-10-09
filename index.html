@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Daily Board Setup</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#0d2d55">
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: #eef5fb;
+      color: #102a43;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 40px 24px;
+    }
+
+    h1 {
+      color: #0d2d55;
+      margin-bottom: 5px;
+    }
+
+    .subtitle {
+      color: #486581;
+      margin-top: 0;
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 14px;
+      padding: 24px;
+      margin-bottom: 20px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    }
+
+    h2 {
+      margin-top: 0;
+      color: #165998;
+    }
+
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 6px;
+    }
+
+    input,
+    select {
+      width: 100%;
+      padding: 11px;
+      margin-bottom: 18px;
+      border: 1px solid #a9bfd3;
+      border-radius: 7px;
+      font-size: 16px;
+    }
+
+    .period-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+.period-row > div:last-child {
+  align-self: end;
+  padding-bottom: 18px;
+}
+    button {
+      border: none;
+      border-radius: 8px;
+      padding: 12px 18px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+
+    .add-button {
+      background: #d9eaf8;
+      color: #165998;
+    }
+
+    .save-button {
+      background: #1d63a8;
+      color: white;
+      margin-top: 20px;
+      font-size: 18px;
+    }
+
+    @media (max-width: 700px) {
+      .period-row {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <main class="page">
+<div
+  id="firstRunWelcome"
+  style="
+    display: none;
+    background: white;
+    border-radius: 14px;
+    padding: 22px;
+    margin-bottom: 20px;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  "
+>
+  <h2
+    style="
+      margin-top: 0;
+      color: #165998;
+    "
+  >
+    Welcome to Daily Board
+  </h2>
+
+  <p
+    style="
+      margin-bottom: 0;
+      font-size: 17px;
+      line-height: 1.5;
+    "
+  >
+    Let's set up your classroom.
+    You'll only need to do this once unless your schedule changes.
+  </p>
+</div>
+    <h1>Daily Board</h1>
+
+    <p class="subtitle">
+      Let's set up your classroom.
+    </p>
+
+
+    <section class="card">
+
+      <h2>Teacher Information</h2>
+
+      <label for="teacherName">
+        Teacher Name
+      </label>
+
+      <input
+        type="text"
+        id="teacherName"
+        placeholder="Example: Mrs. Smith"
+      >
+
+      <label for="roomName">
+        Classroom / Room Name
+      </label>
+
+      <input
+        type="text"
+        id="roomName"
+        placeholder="Example: Room 204"
+      >
+
+    </section>
+
+
+    <section class="card">
+
+      <h2>Normal Bell Schedule</h2>
+
+      <p>
+        Enter the classes and periods in the order
+        they occur during the school day.
+      </p>
+
+
+      <div id="periodList">
+
+        <div class="period-row">
+
+          <div>
+            <label>Period / Class</label>
+
+            <input
+              type="text"
+              placeholder="Example: Period 1 Biology"
+            >
+          </div>
+
+
+          <div>
+            <label>Start</label>
+
+            <input type="time">
+          </div>
+
+
+          <div>
+            <label>End</label>
+
+            <input type="time">
+          </div>
+
+
+          <div>
+            <label>Type</label>
+
+            <select>
+              <option value="class">
+                Class
+              </option>
+
+              <option value="special">
+                Special
+              </option>
+            </select>
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <button
+        class="add-button"
+        type="button"
+        onclick="addPeriod()"
+      >
+        + Add Period
+      </button>
+
+    </section>
+
+
+    <button
+      class="save-button"
+      type="button"
+      onclick="saveSetup()"
+    >
+      Save Classroom Setup
+    </button>
+
+    <button
+id="homeButton"
+class="add-button"
+  type="button"
+  onclick="openHome()"
+>
+  Home
+</button>
+
+  </main>
+
+
+  <script>
+
+let setupHasUnsavedChanges = false;
+
+
+  function addPeriod(periodData = null) {
+
+    const periodList =
+      document.getElementById("periodList");
+
+    const newRow =
+      document.createElement("div");
+
+    newRow.className = "period-row";
+
+    newRow.innerHTML = `
+      <div>
+        <label>Period / Class</label>
+        <input
+          class="period-name"
+          type="text"
+          placeholder="Example: Period 2 Chemistry"
+          value="${periodData?.name || ""}"
+        >
+      </div>
+
+      <div>
+        <label>Start</label>
+        <input
+          class="period-start"
+          type="time"
+          value="${periodData?.start || ""}"
+        >
+      </div>
+
+      <div>
+        <label>End</label>
+        <input
+          class="period-end"
+          type="time"
+          value="${periodData?.end || ""}"
+        >
+      </div>
+
+      <div>
+        <label>Type</label>
+
+        <select class="period-type">
+          <option
+            value="class"
+            ${periodData?.type === "class" ? "selected" : ""}
+          >
+            Class
+          </option>
+
+          <option
+            value="special"
+            ${periodData?.type === "special" ? "selected" : ""}
+          >
+            Special
+          </option>
+        </select>
+      </div>
+
+      <div>
+  <button
+    type="button"
+   onclick="removePeriod(this)"
+  >
+    Remove
+  </button>
+</div>
+    `;
+
+    periodList.appendChild(newRow);
+    
+    if (periodData === null) {
+  setupHasUnsavedChanges = true;
+}
+  }
+
+  function removePeriod(button) {
+  const confirmed = confirm(
+    "Are you sure you want to remove this period?"
+  );
+
+  if (!confirmed) {
+    return;
+  }
+
+  button.closest(".period-row").remove();
+  saveSetup();
+}
+
+
+  function saveSetup() {
+
+    const teacherName =
+      document.getElementById("teacherName").value.trim();
+
+    const roomName =
+      document.getElementById("roomName").value.trim();
+
+    const rows =
+      document.querySelectorAll(".period-row");
+
+    const periods = [];
+
+    rows.forEach(row => {
+
+      const name =
+        row.querySelector(".period-name");
+
+      const start =
+        row.querySelector(".period-start");
+
+      const end =
+        row.querySelector(".period-end");
+
+      const type =
+        row.querySelector(".period-type");
+
+      if (
+        name &&
+        start &&
+        end &&
+        type
+      ) {
+        periods.push({
+          name: name.value.trim(),
+          start: start.value,
+          end: end.value,
+          type: type.value
+        });
+      }
+
+    });
+
+    const setupData = {
+      teacherName,
+      roomName,
+      periods
+    };
+
+    localStorage.setItem(
+  "dailyBoardSetup",
+  JSON.stringify(setupData)
+);
+
+setupHasUnsavedChanges = false;
+
+const params =
+  new URLSearchParams(
+    window.location.search
+  );
+
+const firstRun =
+  params.get("firstRun") === "1";
+
+alert(
+  "Classroom setup saved successfully."
+);
+
+if (firstRun) {
+
+  window.location.href =
+    "dashboard.html";
+
+}
+
+}
+
+
+  function loadSetup() {
+
+    const saved =
+      localStorage.getItem("dailyBoardSetup");
+
+    if (!saved) {
+      prepareFirstRow();
+      return;
+    }
+
+    const setupData =
+      JSON.parse(saved);
+
+    document.getElementById(
+      "teacherName"
+    ).value =
+      setupData.teacherName || "";
+
+    document.getElementById(
+      "roomName"
+    ).value =
+      setupData.roomName || "";
+
+    const periodList =
+      document.getElementById("periodList");
+
+    periodList.innerHTML = "";
+
+    if (
+      setupData.periods &&
+      setupData.periods.length > 0
+    ) {
+      setupData.periods.forEach(period => {
+        addPeriod(period);
+      });
+    }
+    else {
+      addPeriod();
+    }
+  }
+
+
+  function prepareFirstRow() {
+
+    const firstRow =
+      document.querySelector(".period-row");
+
+    if (!firstRow) {
+      return;
+    }
+
+    const inputs =
+      firstRow.querySelectorAll(
+        "input, select"
+      );
+
+    if (inputs.length < 4) {
+      return;
+    }
+
+    inputs[0].classList.add(
+      "period-name"
+    );
+
+    inputs[1].classList.add(
+      "period-start"
+    );
+
+    inputs[2].classList.add(
+      "period-end"
+    );
+
+    inputs[3].classList.add(
+      "period-type"
+    );
+  }
+
+function openHome() {
+  if (setupHasUnsavedChanges) {
+  const saveChanges = confirm(
+    "You have unsaved changes. Would you like to save them before returning Home?"
+  );
+  if (!saveChanges) {
+  return;
+}
+
+  if (saveChanges) {
+    saveSetup();
+  }
+}
+
+  window.location.href =
+    "home.html";
+
+}
+
+
+function initializeFirstRunMessage() {
+
+  const params =
+    new URLSearchParams(
+      window.location.search
+    );
+
+  const firstRun =
+    params.get("firstRun") === "1";
+
+  if (firstRun) {
+
+    document.getElementById(
+      "firstRunWelcome"
+    ).style.display =
+      "block";
+
+
+  document.getElementById(
+    "homeButton"
+  ).style.display = "none";
+
+}
+  }
+
+
+
+
+initializeFirstRunMessage();
+prepareFirstRow();
+loadSetup();
+
+document.addEventListener("input", () => {
+  setupHasUnsavedChanges = true;
+});
+
+document.addEventListener("change", () => {
+  setupHasUnsavedChanges = true;
+});
+
+</script>
+
+
+</body>
+</html>
